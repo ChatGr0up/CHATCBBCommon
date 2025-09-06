@@ -1,0 +1,2 @@
+add_subdirectory(ModuleController)
+add_subdirectory(LockFreeMPSCLogger)
