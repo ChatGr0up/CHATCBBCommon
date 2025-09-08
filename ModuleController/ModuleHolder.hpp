@@ -5,6 +5,7 @@
 #include <sstream>
 #include "ModuleItf.hpp"
 #include "boost/json.hpp"
+#include "LockFreeMPSCLogger/LogMacro.hpp"
 
 namespace CBB::ModuleController {
 class ModuleHolder {
@@ -15,7 +16,7 @@ public:
     }
 
     void init() {
-        std::cout << "ModuleHolder inited" << std::endl;
+        LOG_INFO("ModuleHolder inited");
     }
 
     ModuleItf& getModule(const std::string& moduleName) {
@@ -34,13 +35,13 @@ public:
     }
 
     void cleanup(int signal) {
-        std::cout << "Cleaning up modules due to signal: " << signal << std::endl;
+        LOG_INFO("Cleaning up modules due to signal " << signal);
         for (auto& module : m_modules) {
             if (module) {
                 try {
                     module->stop();
                 } catch (const std::exception& e) {
-                    std::cerr << "Error stopping module " + module->name() + ": " + std::string(e.what());
+                    LOG_ERROR("Error stopping module " << module->name() << ": " << e.what());
                 }
             }
         }
@@ -64,7 +65,7 @@ private:
     boost::json::value getJsonFromFile() {
         std::ifstream file("configs/module_config.json", std::ios::in);
         if (!file.is_open()) {
-            std::cerr << "Failed to open module_config.json";
+            LOG_ERROR("Failed to open module_config.json");
             return boost::json::value();
         }
         std::stringstream buffer;
@@ -80,26 +81,26 @@ private:
             boost::json::value jsonValue = getJsonFromFile();
             if (!jsonValue.is_object() || !jsonValue.as_object().contains("modules") ||
                 !jsonValue.as_object()["modules"].is_array()) {
-                std::cerr << "Invalid module_config.json format";
+                LOG_ERROR("Invalid module_config.json format");
                 return;
             }
             const auto& modulesArray = jsonValue.as_object()["modules"].as_array();
             for (const auto& moduleVal : modulesArray) {
                 if (!moduleVal.is_object() || !moduleVal.as_object().contains("name") ||
                     !moduleVal.at("name").is_string()) {
-                    std::cerr << "Invalid module entry in module_config.json";
+                    LOG_ERROR("Invalid module entry in module_config.json");
                     continue;
                 }
                 std::string moduleName = moduleVal.at("name").as_string().c_str();
                 try {
                     m_modules.emplace_back(ModuleFactory::create(moduleName));
                 } catch (const std::exception& e) {
-                    std::cerr << "Failed to load module: " + moduleName + ", error: " + std::string(e.what());
+                    LOG_ERROR("Failed to load module: " << moduleName << ", error: " << e.what());
                 }
             }
             m_initialized = true;
         } catch (const std::exception& e) {
-            std::cerr << ("Failed to read module_config.json: " + std::string(e.what()));
+            LOG_ERROR("Exception in registerModule: " << e.what());
         }
     }
 private:
