@@ -39,3 +39,10 @@ Linux 下默认临时端口范围是 32768 - 60999（大约 28231 个端口）�
 调优后（大内存 + epoll + 调整内核参数）：10万~50万连接
 
 极限压测：百万连接（大内存 + 高性能网卡 + 专门内核调优）
+
+11、listen backlog 参数，也就是 内核全连接队列的长度上限
+Linux 下默认是 128，可以通过 /proc/sys/net/core/somaxconn 修改，建议调大到 1024 或更高。
+这个值影响新连接的接受能力，过小可能导致连接请求被拒绝。
+sysctl -w net.core.somaxconn=4096
+sysctl -w net.ipv4.tcp_max_syn_backlog=4096
+
