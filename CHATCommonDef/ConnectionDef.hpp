@@ -16,4 +16,5 @@ struct connectInfo {
 
 const uint64_t MAX_CONNECTIONS = 25000;
 const uint64_t SOMAXCONN = 4096; // by setting /proc/sys/net/core/somaxconn
+const uint16_t MAX_EPOLL_CONSUMERS = 8;
 }

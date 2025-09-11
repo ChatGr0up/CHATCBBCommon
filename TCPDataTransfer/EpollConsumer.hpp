@@ -3,8 +3,10 @@
 namespace TCPDataTransfer {
 class EpollConsumer {
 public:
-    EpollConsumer() = default;
-    ~EpollConsumer() = default;
-    
-}
+    explicit EpollConsumer(int consumerTag);
+    ~EpollConsumer();
+
+    void stop();
+
+};
 }

@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <netinet/tcp.h>
 
 namespace TCPDataTransfer {
 TCPDataTransfer& TCPDataTransfer::instance() {
@@ -41,7 +42,7 @@ connectInfo TCPDataTransfer::buildConnection(uint64_t userId)
         connNum--;  
         return connectInfo{};
     }
-    if (!epollConsumerPool_.addUserSocket(newConn.socketFd, userId)) {
+    if (!epollConsumerPool_->addUserSocket(newConn.socketFd, userId)) {
         ::close(newConn.socketFd);
         connNum--;  
         return connectInfo{};
@@ -82,13 +83,57 @@ bool TCPDataTransfer::buildSocket(connectInfo& conn)
         ::close(userSocket);
         return false;   
     }
+    if (!optimizeSocket(userSocket)) {
+        ::close(userSocket);
+        return false;   
+    }
     conn.socketFd = userSocket;
     conn.serverPort = assignedPort;
+    return true;
+}
+
+bool TCPDataTransfer::optimizeSocket(int socketfd_)
+{
+    int opt = 1; // no Nagle
+    if (!setsockopt(socketfd_, IPPROTO_TCP, TCP_NODELAY, (char*)&opt, sizeof(opt))) {
+        LOG_ERROR("setsockopt TCP_NODELAY failed.");
+        return false;
+    }
+
+    int sndBuf = 1 << 20; // 1MB
+    if (!setsockopt(socketfd_, SOL_SOCKET, SO_SNDBUF, &sndBuf, sizeof(sndBuf))) {
+        LOG_ERROR("setsockopt SO_SNDBUF failed.");
+        return false;
+    }
+
+    if (!fcntl(socketfd_, F_SETFL, O_NONBLOCK)) {
+        LOG_ERROR("fcntl O_NONBLOCK failed.");
+        return false;
+    } // non-blocking
+
+    struct timeval timeout{3, 0}; 
+    if (!setsockopt(socketfd_, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout))) {
+        LOG_ERROR("setsockopt SO_SNDTIMEO failed.");
+        return false;
+    } // Send timeout
+
+    int reuse = 1;
+    if (!setsockopt(socketfd_, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse))) {
+        LOG_ERROR("setsockopt SO_REUSEADDR failed.");
+        return false;
+    }
+
+    if (!setsockopt(socketfd_, IPPROTO_IP, IP_BIND_ADDRESS_NO_PORT, &opt, sizeof(opt))){
+        LOG_ERROR("setsockopt IP_BIND_ADDRESS_NO_PORT failed.");
+        return false;
+    } // allow binding to an address without a port
+    LOG_INFO("Socket optimized successfully, socketfd: " << socketfd_);
     return true;
 }
 
 void TCPDataTransfer::init()
 {
     LOG_INFO("TCPDataTransfer initialized.");
+    epollConsumerPool_ = std::make_unique<EpollConsumerPool>();
 }
 }

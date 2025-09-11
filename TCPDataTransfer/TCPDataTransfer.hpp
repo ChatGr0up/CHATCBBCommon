@@ -1,6 +1,7 @@
 #pragma once
 
-#include "TCPDataTransferDefine.hpp"
+#include "ConnectionDef.hpp"
+#include "EpollConsumerPool.hpp"
 #include <unordered_map>
 #include <atomic>
 #include <shared_mutex>
@@ -19,9 +20,11 @@ private:
     ~TCPDataTransfer();
     void init();
     bool buildSocket(connectInfo& conn);
+    bool optimizeSocket(int socketfd_);
 private:
     std::shared_mutex connMutex_;
     std::unordered_map<uint64_t, connectInfo> connections_;
     std::atomic<uint64_t> connNum{0};
+    std::unique_ptr<EpollConsumerPool> epollConsumerPool_;
 };
 }
