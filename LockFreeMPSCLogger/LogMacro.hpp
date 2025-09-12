@@ -52,6 +52,26 @@ void LogFmt(LOG::LogLevel level, const char* file, int line, const char* func, A
         LOG_ERROR("Unknown exception"); \
     }
 
+#define CATCH_AND_MSG(msg) \
+    catch (const std::invalid_argument& e) { \
+        LOG_ERROR(msg << ", Invalid argument: " << e.what()); \
+    } catch (const std::overflow_error& e) { \
+        LOG_ERROR(msg << ", Overflow error: " << e.what()); \
+    } catch (const std::bad_alloc& e) { \
+        LOG_ERROR(msg << ", Bad alloc: " << e.what()); \
+    } catch (const std::ios_base::failure& e) { \
+        LOG_ERROR(msg << ", IO failure: " << e.what()); \
+    } catch (const std::system_error& e) { \
+        LOG_ERROR(msg << ", System error: " << e.what()); \
+    } catch (const std::logic_error& e) { \
+        LOG_ERROR(msg << ", Logic error: " << e.what()); \
+    } catch (const std::runtime_error& e) { \
+        LOG_ERROR(msg << ", Runtime error: " << e.what()); \
+    } catch (const std::exception& e) { \
+        LOG_ERROR(msg << ", Generic exception: " << e.what()); \
+    } catch (...) { \
+        LOG_ERROR(msg << ", Unknown exception"); \
+    }
 
 #define CATCH_AND_RETURN(ret) \
     catch (const std::invalid_argument& e) { \
@@ -85,30 +105,30 @@ void LogFmt(LOG::LogLevel level, const char* file, int line, const char* func, A
 
 #define CATCH_MSG_AND_RETURN(msg, ret) \
     catch (const std::invalid_argument& e) { \
-        LOG_ERROR(msg << "Invalid argument: " << e.what()); \
+        LOG_ERROR(msg << ", Invalid argument: " << e.what()); \
         return ret; \
     } catch (const std::overflow_error& e) { \
-        LOG_ERROR(msg << "Overflow error: " << e.what()); \
+        LOG_ERROR(msg << ", Overflow error: " << e.what()); \
         return ret; \
     } catch (const std::bad_alloc& e) { \
-        LOG_ERROR(msg << "Bad alloc: " << e.what()); \
+        LOG_ERROR(msg << ", Bad alloc: " << e.what()); \
         return ret; \
     } catch (const std::ios_base::failure& e) { \
-        LOG_ERROR(msg << "IO failure: " << e.what()); \
+        LOG_ERROR(msg << ", IO failure: " << e.what()); \
         return ret; \
     } catch (const std::system_error& e) { \
-        LOG_ERROR(msg << "System error: " << e.what()); \
+        LOG_ERROR(msg << ", System error: " << e.what()); \
         return ret; \
     } catch (const std::logic_error& e) { \
-        LOG_ERROR(msg << "Logic error: " << e.what()); \
+        LOG_ERROR(msg << ", Logic error: " << e.what()); \
         return ret; \
     } catch (const std::runtime_error& e) { \
-        LOG_ERROR(msg << "Runtime error: " << e.what()); \
+        LOG_ERROR(msg << ", Runtime error: " << e.what()); \
         return ret; \
     } catch (const std::exception& e) { \
-        LOG_ERROR(msg << "Generic exception: " << e.what()); \
+        LOG_ERROR(msg << ", Generic exception: " << e.what()); \
         return ret; \
     } catch (...) { \
-        LOG_ERROR(msg << "Unknown exception"); \
+        LOG_ERROR(msg << ", Unknown exception"); \
         return ret; \
     }

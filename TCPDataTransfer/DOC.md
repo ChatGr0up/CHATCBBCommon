@@ -46,3 +46,4 @@ Linux 下默认是 128，可以通过 /proc/sys/net/core/somaxconn 修改，建�
 sysctl -w net.core.somaxconn=4096
 sysctl -w net.ipv4.tcp_max_syn_backlog=4096
 
+12、对于一个正常的 TCP 连接，接收和发送是通过同一个 socket 完成的。这是 TCP 的基本特性——全双工通信。也就是说，一个 socket 可以同时接收数据和发送数据，服务端和客户端可以通过同一个 socket 双向通信。
