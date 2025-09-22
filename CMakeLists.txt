@@ -1,3 +1,4 @@
 add_subdirectory(ModuleController)
 add_subdirectory(LockFreeMPSCLogger)
 add_subdirectory(TCPDataTransfer)
+add_subdirectory(CommonUtils)
