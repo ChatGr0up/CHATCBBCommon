@@ -77,8 +77,13 @@ private:
 
     void consumeLoop() {
         std::string log_path = std::getenv("LOG_PATH") ? std::getenv("LOG_PATH") : "app.log";
-        std::filesystem::create_directories(std::filesystem::path(log_path).parent_path());
-        const int fd = ::open(log_path.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0644);
+        int fd = -1;
+        try {
+            std::filesystem::create_directories(std::filesystem::path(log_path).parent_path());
+            fd = ::open(log_path.c_str(), O_WRONLY | O_CREAT | O_APPEND, 0644);
+        } catch(...) {
+            std::cerr << "Failed to create log directory for: " << log_path << "\n";
+        }
         if (fd < 0) {
             std::cerr << "Failed to open log file: " << std::getenv("LOG_PATH") << "\n";
             return;
